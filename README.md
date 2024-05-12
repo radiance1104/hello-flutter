@@ -172,20 +172,23 @@ class _LoginPage extends State<LoginPage> {
     return Scaffold(
       body: Center(
         child: TextField(
-          TextField(
-            // コントローラの割り当て
-            controller: _userIdController,
-            // 見た目
-            decoration: const InputDecoration(
-              labelText: 'ユーザID',
-              hintText: 'ユーザIDを入力',
-              border: OutlineInputBorder(),
-            ),
-            // 変更イベント
-            onChanged: (String text) {
-            },
+          controller: _userIdController,
+          // キーボードの種別
+          keyboardType: TextInputType.emailAddress,
+          // 文字種の制限
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]'))
+          ],
+          // 見た目
+          decoration: const InputDecoration(
+            labelText: 'ユーザID',
+            hintText: 'ユーザIDを入力',
+            border: OutlineInputBorder(),
           ),
-        )
+          // 変更イベント
+          onChanged: (String text) {
+          },
+        ),
       )
     )
   }
@@ -201,6 +204,40 @@ print("login with userId: ${_userIdController.text}");
 #### TextFormField
 
 バリデータの機能を持つテキストフィールド。
+
+### チェックボックス
+
+```dart
+class _LoginPage extends State<LoginPage> {
+  // パスワードを表示するか
+  bool _isVisiblePassword = false;
+
+  // チェックボックスの変更イベント
+  void _handleChangeCheckBox(bool? isChecked) {
+    // Stateの更新はsetState内で行う必要がある
+    setState(() {
+      _isVisiblePassword = isChecked ?? false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Row(
+          children: [
+            Checkbox(
+              value: _isVisiblePassword,
+              onChanged: _handleChangeCheckBox,
+            ),
+            const Text('パスワードを表示'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
 
 ### 画像の表示
 
@@ -248,3 +285,167 @@ Column内で使えば縦方向、Row内で使えば横方向にスペースが�
 ```dart
 const Spacer(),
 ```
+
+## 多言語化対応
+
+1. flutter_localizationプラグインをインストール
+
+    ```cli
+    flutter pub add flutter_localization 
+    ```
+
+2. intlプラグインをインストール
+
+    ```cli
+    flutter pub add flutter_localizations --sdk=flutter
+    ```
+
+    インストールが成功したら、pubspec.yamlに書き込まれる
+
+    ```pubspec.yaml
+    dependencies:
+      flutter_localizations:
+        sdk: flutter
+    ```
+
+3. 多言語の設定
+
+    ```cli
+    flutter pub add intl:any
+    ```
+
+    インストールが成功したら、pubspec.yamlに書き込まれる
+
+    ```pubspec.yaml
+    dependencies:
+      intl: any
+    ```
+
+4. MaterialAppに多言語設定を追記する
+
+    ```main.dart
+    import 'package:flutter_localizations/flutter_localizations.dart';
+    ```
+
+    ```main.dart
+    return MaterialApp(
+      title: 'Flutter Demo',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ja'),
+      ],
+    );
+    ```
+
+5. generateフラグを立てる
+
+    pubspec.yamlにgenerateを追記する
+    ※dependencies内ではない
+
+    ```pubspec.yaml
+    flutter:
+      generate: true
+    ```
+
+6. プロジェクトルートに`l10n.yaml`ファイルを追加する
+
+    ```l10n.yaml
+    arb-dir: lib/l10n
+    template-arb-file: app_en.arb
+    output-localization-file: app_localizations.dart
+    ```
+
+7. 言語ファイルを作成する
+
+    `lib/l10n`フォルダを作成し、各言語ファイルを配置する
+
+    ```lib/l10n/app_en.arb
+    {
+      "loginUserId": "User id",
+      "loginPassword": "Password",
+      "loginButton": "Log in"
+    }
+    ```
+
+    ```lib/l10n/app_ja.arb
+    {
+      "loginUserId": "ユーザID",
+      "loginPassword": "パスワード",
+      "loginButton": "ログイン"
+    }
+    ```
+
+8. コードを自動生成する
+
+    下記のコマンドを実行することで、arbファイルを元にdartファイルが自動生成される。  
+    このコマンドはarbファイルを変更するたびに実施すること。
+
+    ```cli
+    flutter pub get
+    ```
+
+    `.dart_tool/flutter_gen/gen_l10n`内に下記のようなファイルが自動生成される
+
+    ```.dart_tool/flutter_gen/gen_l10n/app_localizations_en.dart
+    import 'app_localizations.dart';
+
+    /// The translations for English (`en`).
+    class AppLocalizationsEn extends AppLocalizations {
+      AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+      @override
+      String get loginUserId => 'User id';
+
+      @override
+      String get loginPassword => 'Password';
+
+      @override
+      String get loginButton => 'Log in';
+    }
+    ```
+
+9. MaterialAppにAppLocalizationsを追記する
+
+    ```dart
+    import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+    ```
+
+    ```dart
+    return MaterialApp(
+      title: 'Flutter Demo',
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ja'),
+      ],
+    );
+    ```
+
+10. 各ウィジェットでテキストを読み込む
+
+    ```dart
+    import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+    ```
+
+    ```dart
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          // 以下のようにしてStringを読み込む
+          title: Text(AppLocalizations.of(context)!.loginTitle),
+        ),
+      );
+    }
+    ```

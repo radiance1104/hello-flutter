@@ -1,0 +1,9 @@
+{
+    "loginTitle": "ログイン",
+    "loginUserId": "ユーザID",
+    "loginUserIdPlaceholder": "ユーザIDを入力",
+    "loginPassword": "パスワード",
+    "loginPasswordPlaceholder": "パスワードを入力",
+    "loginVisiblePassword": "パスワードを表示",
+    "loginButton": "ログイン"
+}

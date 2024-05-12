@@ -1,0 +1,9 @@
+{
+    "loginTitle": "Log in",
+    "loginUserId": "User id",
+    "loginUserIdPlaceholder": "Input user id",
+    "loginPassword": "Password",
+    "loginPasswordPlaceholder": "Input password",
+    "loginVisiblePassword": "Visible password",
+    "loginButton": "Log in"
+}
